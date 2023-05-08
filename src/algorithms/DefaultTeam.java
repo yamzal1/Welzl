@@ -2,14 +2,14 @@ package algorithms;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Random;
 
 import supportGUI.Circle;
 import supportGUI.Line;
 
 public class DefaultTeam {
 
-  // calculDiametre: ArrayList<Point> --> Line
-  //   renvoie une pair de points de la liste, de distance maximum.
+
   public Line calculDiametre(ArrayList<Point> points) {
     //Algo naif diamètre ensemble de points
     if (points.size() < 2) return null;
@@ -25,11 +25,12 @@ public class DefaultTeam {
   }
 
   public Circle calculCercleMin(ArrayList<Point> points) {
-    return ritter(points);
+   // return ritter(points);
    // return algoNaif(points);
+    return welzl(points);
   }
 
-//ALGO NAIF CERCLE MIN
+  //ALGO NAIF CERCLE MIN
   private Circle algoNaif(ArrayList<Point> inputPoints) {
     //Algo naif cercle min
     ArrayList<Point> points = (ArrayList<Point>) inputPoints.clone();
@@ -136,10 +137,95 @@ public class DefaultTeam {
     return new Circle(new Point((int) cX, (int) cY), (int) cRadius);
   }
 
+
+
+
+
+
+
+
+  public Circle welzl(ArrayList<Point> points) {
+    ArrayList<Point> shuffledPoints = new ArrayList<Point>(points);
+    shuffle(shuffledPoints);
+    return welzlRecursive(shuffledPoints, new ArrayList<Point>(), 0);
+  }
+
+  private Circle welzlRecursive(ArrayList<Point> points, ArrayList<Point> boundaryPoints, int index) {
+    if (index == points.size() || boundaryPoints.size() == 3) {
+      return circleFromBoundaryPoints(boundaryPoints);
+    }
+
+    Point point = points.get(index);
+    Circle circle = welzlRecursive(points, boundaryPoints, index + 1);
+
+    if (circle == null || !circleContains(circle, point)) {
+      boundaryPoints.add(point);
+      circle = welzlRecursive(points, boundaryPoints, index + 1);
+      boundaryPoints.remove(boundaryPoints.size() - 1);
+    }
+
+    return circle;
+  }
+
+  private Circle circleFromBoundaryPoints(ArrayList<Point> points) {
+    if (points.isEmpty()) {
+      return null;
+    } else if (points.size() == 1) {
+      return new Circle(points.get(0), 0);
+    } else if (points.size() == 2) {
+      Point a = points.get(0);
+      Point b = points.get(1);
+      Point center = new Point((a.x + b.x) / 2, (a.y + b.y) / 2);
+      int radius = (int) a.distance(center);
+      return new Circle(center, radius);
+    } else {
+      Point a = points.get(0);
+      Point b = points.get(1);
+      Point c = points.get(2);
+      Point center = circleCenter(a, b, c);
+      int radius = (int) a.distance(center);
+      return new Circle(center, radius);
+    }
+  }
+
+  private Point circleCenter(Point a, Point b, Point c) {
+    double d = 2 * (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
+    double x = ((a.x * a.x + a.y * a.y) * (b.y - c.y) + (b.x * b.x + b.y * b.y) * (c.y - a.y) + (c.x * c.x + c.y * c.y) * (a.y - b.y)) / d;
+    double y = ((a.x * a.x + a.y * a.y) * (c.x - b.x) + (b.x * b.x + b.y * b.y) * (a.x - c.x) + (c.x * c.x + c.y * c.y) * (b.x - a.x)) / d;
+    return new Point((int) x, (int) y);
+  }
+
+  private boolean circleContains(Circle circle, Point point) {
+    int dx = circle.getCenter().x - point.x;
+    int dy = circle.getCenter().y - point.y;
+    int distanceSquared = dx * dx + dy * dy;
+    int radiusSquared = circle.getRadius() * circle.getRadius();
+    return distanceSquared <= radiusSquared;
+  }
+
+  private void shuffle(ArrayList<Point> points) {
+    Random random = new Random();
+    int n = points.size();
+    for (int i = n - 1; i > 0; i--) {
+      int j = random.nextInt(i + 1);
+      Point temp = points.get(i);
+      points.set(i, points.get(j));
+      points.set(j, temp);
+    }
+  }
+
+
+
+
+
+
+
+
+
+
   private double crossProduct(Point p, Point q, Point s, Point t) {
     return ((q.x - p.x) * (t.y - s.y) - (q.y - p.y) * (t.x - s.x));
   }
-
   private ArrayList<Point> exercice2(ArrayList<Point> points) {
     //Tri pixel
     if (points.size() < 4) return points;
@@ -183,22 +269,18 @@ public class DefaultTeam {
     }
     return result;
   }
-
   private boolean triangleContientPoint(Point a, Point b, Point c, Point x) {
     double l1 = ((b.y - c.y) * (x.x - c.x) + (c.x - b.x) * (x.y - c.y)) / (double) ((b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y));
     double l2 = ((c.y - a.y) * (x.x - c.x) + (a.x - c.x) * (x.y - c.y)) / (double) ((b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y));
     double l3 = 1 - l1 - l2;
     return (0 < l1 && l1 < 1 && 0 < l2 && l2 < 1 && 0 < l3 && l3 < 1);
   }
-
   private double angle(Point p, Point q, Point s, Point t) {
     if (p.equals(q) || s.equals(t)) return Double.MAX_VALUE;
     double cosTheta = dotProduct(p, q, s, t) / (double) (p.distance(q) * s.distance(t));
     return Math.acos(cosTheta);
   }
-
   private double dotProduct(Point p, Point q, Point s, Point t) {
     return ((q.x - p.x) * (t.x - s.x) + (q.y - p.y) * (t.y - s.y));
   }
-
 }
