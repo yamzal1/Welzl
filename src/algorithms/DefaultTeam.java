@@ -6,6 +6,8 @@ import java.util.Random;
 
 import supportGUI.Circle;
 import supportGUI.Line;
+import java.util.Stack;
+
 
 import java.util.Collections;
 
@@ -30,7 +32,7 @@ public class DefaultTeam {
         System.out.println("ritter(points) : " + ritter(points));
         // return ritter(points);
         // return algoNaif(points);
-        return welzl(points);
+         return welzl(points);
     }
 
     //ALGO NAIF CERCLE MIN
@@ -147,8 +149,7 @@ public class DefaultTeam {
 
     private boolean isInside(Circle c, Point p) {
         if (c == null) {
-            // System.out.println("ISINSIDE : NULL");
-            return false; // ou vous pouvez gérer cette situation autrement
+            return false;
         }
         return dist(c.getCenter(), p) <= c.getRadius();
     }
@@ -158,7 +159,7 @@ public class DefaultTeam {
         int C = cx * cx + cy * cy;
         int D = bx * cy - by * cx;
         if (D == 0) {
-            return null; // ou vous pouvez gérer cette situation autrement
+            return null;
         }
         return new Point((cy * B - by * C) / (2 * D), (bx * C - cx * B) / (2 * D));
     }
@@ -166,7 +167,7 @@ public class DefaultTeam {
     private Circle circleFrom(Point A, Point B, Point C) {
         Point I = getCircleCenter(B.x - A.x, B.y - A.y, C.x - A.x, C.y - A.y);
         if (I == null) {
-            return null; // ou vous pouvez gérer cette situation autrement
+            return null;
         }
         I.x += A.x;
         I.y += A.y;
@@ -235,31 +236,6 @@ public class DefaultTeam {
         return welzlHelper(P_copy, new ArrayList<Point>(), P_copy.size());
     }
 
-
-    private double crossProduct(Point p, Point q, Point s, Point t) {
-        return ((q.x - p.x) * (t.y - s.y) - (q.y - p.y) * (t.x - s.x));
-    }
-
-    private ArrayList<Point> triPanier(ArrayList<Point> points) {
-        if (points.size() < 4) return points;
-        int maxX = points.get(0).x;
-        for (Point p : points) if (p.x > maxX) maxX = p.x;
-        Point[] maxY = new Point[maxX + 1];
-        Point[] minY = new Point[maxX + 1];
-        for (Point p : points) {
-            if (maxY[p.x] == null || p.y > maxY[p.x].y) maxY[p.x] = p;
-            if (minY[p.x] == null || p.y < minY[p.x].y) minY[p.x] = p;
-        }
-        ArrayList<Point> result = new ArrayList<Point>();
-        for (int i = 0; i < maxX + 1; i++) if (maxY[i] != null) result.add(maxY[i]);
-        for (int i = maxX; i >= 0; i--)
-            if (minY[i] != null && !result.get(result.size() - 1).equals(minY[i])) result.add(minY[i]);
-
-        if (result.get(result.size() - 1).equals(result.get(0))) result.remove(result.size() - 1);
-
-        return result;
-    }
-
     private ArrayList<Point> filtrageAklToussaint(ArrayList<Point> points) {
         if (points.size() < 4) return points;
 
@@ -290,13 +266,5 @@ public class DefaultTeam {
         return (0 < l1 && l1 < 1 && 0 < l2 && l2 < 1 && 0 < l3 && l3 < 1);
     }
 
-    private double angle(Point p, Point q, Point s, Point t) {
-        if (p.equals(q) || s.equals(t)) return Double.MAX_VALUE;
-        double cosTheta = dotProduct(p, q, s, t) / (double) (p.distance(q) * s.distance(t));
-        return Math.acos(cosTheta);
-    }
 
-    private double dotProduct(Point p, Point q, Point s, Point t) {
-        return ((q.x - p.x) * (t.x - s.x) + (q.y - p.y) * (t.y - s.y));
-    }
 }
